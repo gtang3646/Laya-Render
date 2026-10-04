@@ -140,6 +140,12 @@ class LayaONNX:
         ids, items = list(questions.keys()), []
         for qid in ids:
             q = to_internal(questions[qid])
+            if q["t"] not in QTYPES:
+                raise ValueError("question %r has unknown type %r (expected one of %s)"
+                                 % (qid, q["t"], ", ".join(sorted(QTYPES))))
+            if q["t"] != "noul" and not q["crit"]:
+                raise ValueError("question %r of type %r requires non-empty criteria"
+                                 % (qid, q["t"]))
             seq, markers = build_sequence(self.tok, state, q, self.max_len, self.head_max_len,
                                           self.mask_token, self.mask_id, self.cls_id, self.sep_id)
             if len(markers) != len(render_options(q)):

@@ -24,6 +24,10 @@ VARIANT = os.environ.get("LAYA_VARIANT", "wo8")
 HF_REPO = os.environ.get("LAYA_HF_REPO", "convaiinnovations/laya-quantized")
 INTRA_OP_THREADS = int(os.environ.get("LAYA_INTRA_OP_THREADS", "2"))
 MAX_BATCH_QUESTIONS = int(os.environ.get("LAYA_MAX_BATCH_QUESTIONS", "8"))
+# 512 keeps peak inference memory ~450 MB on a 512 MB instance; the HQ eval set peaks
+# at 286 tokens so this truncates nothing in practice. Raise only if you need longer
+# states and have verified the instance does not OOM.
+MAX_LEN = int(os.environ.get("LAYA_MAX_LEN", "512"))
 
 app = FastAPI(title="laya decision model", version="1.0")
 _runtime: LayaONNX = None
@@ -41,6 +45,7 @@ def _load():
     path = resolve_model(VARIANT, HF_REPO, token=token)
     _runtime = LayaONNX(path, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tokenizer"),
                         intra_op_threads=INTRA_OP_THREADS,
+                        max_len=MAX_LEN,
                         max_batch_questions=MAX_BATCH_QUESTIONS)
     print("loaded %s (%s)" % (path, VARIANTS[VARIANT]["note"]), flush=True)
 

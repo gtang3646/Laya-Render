@@ -63,6 +63,8 @@ D:\anaconda3\envs\ai\python.exe upload_model.py --repo 你的用户名/laya-quan
 | `LAYA_HF_REPO` | `gtang0115/laya-quantized` | 模型所在 HF repo |
 | `LAYA_INTRA_OP_THREADS` | `2` | ORT intra-op 线程数；512MB 实例建议 2，多了反而争抢 |
 | `LAYA_MAX_BATCH_QUESTIONS` | `8` | 单次请求最多合并几个问题，超过则拆批 |
+| `LAYA_MAX_LEN` | `512` | 输入序列上限（token）。512MB 实例上满长度推理峰值约 490MB，
+| | | 余量偏紧；若出现 OOM 重启改成 `384`（HQ 评测集最长 286 token，无精度损失） |
 | `HF_TOKEN` | 无 | 仅当模型 repo 是私有时需要 |
 | `PORT` | `8000` | Render 自动注入 |
 

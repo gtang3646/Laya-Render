@@ -16,4 +16,6 @@ services:
         value: "2"
       - key: LAYA_MAX_BATCH_QUESTIONS
         value: "8"
+      - key: LAYA_MAX_LEN
+        value: "512"   # 512 MB instance budget; HQ eval set peaks at 286 tokens
       - sync: false           # set HF_TOKEN only if the model repo is private
