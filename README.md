@@ -138,6 +138,11 @@ D:\anaconda3\envs\ai\python.exe verify.py
 `wo4` 约 0.25 GB，牺牲 0.61 pt 精度换更稳的内存余量。实例出现 OOM 重启时，
 改 `LAYA_VARIANT=wo4` 重新部署即可，代码无需任何改动。
 
+启动时模型会从 HF 下载到缓存，再复制一份到 models/<variant>/ 下使 .onnx 与 .onnx.data
+并排放置（HF 缓存按哈希把两个文件分到不同目录，onnxruntime 要求外置数据紧邻模型文件，
+否则报 External data path escapes model directory）。因此磁盘占用约两倍模型大小
+（wo8 约 740 MB），8 GB 存储无压力；models/ 已在 .gitignore 中。
+
 Dockerfile 里只用 1 个 uvicorn worker：每个 worker 会加载自己的 ONNX 会话，
 多 worker 会成倍占用内存，512 MB 扛不住。单个 worker 的事件循环足以处理并发请求，
 ORT 会话内部串行执行推理，这正好匹配 512 MB 实例的预算。
