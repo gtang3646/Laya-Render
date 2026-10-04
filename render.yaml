@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: laya-decision-api
+    runtime: docker
+    plan: free                # 512 MB RAM, x86_64, CPU only -- matches the target device
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: LAYA_VARIANT
+        value: wo8            # int8 weight-only, lossless; set wo4 if the instance OOMs
+      - key: LAYA_HF_REPO
+        value: convaiinnovations/laya-quantized
+      - key: LAYA_INTRA_OP_THREADS
+        value: "2"
+      - key: LAYA_MAX_BATCH_QUESTIONS
+        value: "8"
+      - sync: false           # set HF_TOKEN only if the model repo is private
