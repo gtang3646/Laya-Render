@@ -15,6 +15,7 @@ import os
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from typing import Union
 
 from laya_runtime import LayaONNX
 from model_files import VARIANTS, resolve_model
@@ -29,7 +30,7 @@ _runtime: LayaONNX = None
 
 
 class DecideRequest(BaseModel):
-    state: str = Field(..., description="Text, JSON object, or conversation turn list")
+    state: Union[str, dict, list] = Field(..., description="Text, JSON object, or conversation turn list")
     questions: dict = Field(..., description="question_id -> {type, instructions, criteria?}")
 
 

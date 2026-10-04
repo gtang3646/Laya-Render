@@ -113,7 +113,7 @@ curl.exe -X POST http://127.0.0.1:8123/v1/decide -H "Content-Type: application/j
 `type` 支持 `choice` / `score` / `noul`（`score` 类型需要 `criteria` 里的描述）。
 返回 `question_id -> {type, choice|score|noul, probabilities, confidence, action}`，结构与 torch agent 相同。
 
-模型加载中或未加载时返回 503，入参格式错误返回 400。
+模型加载中或未加载时返回 503，入参格式错误返回 422（pydantic 校验）。
 
 ### `GET /health`
 
