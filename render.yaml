@@ -11,7 +11,7 @@ services:
       - key: LAYA_VARIANT
         value: wo8            # int8 weight-only, lossless; set wo4 if the instance OOMs
       - key: LAYA_HF_REPO
-        value: convaiinnovations/laya-quantized
+        value: gtang0115/laya-quantized
       - key: LAYA_INTRA_OP_THREADS
         value: "2"
       - key: LAYA_MAX_BATCH_QUESTIONS
