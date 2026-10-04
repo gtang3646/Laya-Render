@@ -60,7 +60,7 @@ D:\anaconda3\envs\ai\python.exe upload_model.py --repo 你的用户名/laya-quan
 | 变量 | 默认值 | 说明 |
 |---|---|---|
 | `LAYA_VARIANT` | `wo8` | 量化版本，可选 `wo8` / `wo4` |
-| `LAYA_HF_REPO` | `convaiinnovations/laya-quantized` | 模型所在 HF repo |
+| `LAYA_HF_REPO` | `gtang0115/laya-quantized` | 模型所在 HF repo |
 | `LAYA_INTRA_OP_THREADS` | `2` | ORT intra-op 线程数；512MB 实例建议 2，多了反而争抢 |
 | `LAYA_MAX_BATCH_QUESTIONS` | `8` | 单次请求最多合并几个问题，超过则拆批 |
 | `HF_TOKEN` | 无 | 仅当模型 repo 是私有时需要 |
