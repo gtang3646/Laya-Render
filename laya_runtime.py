@@ -30,6 +30,7 @@ QTYPES = {"choice": 0, "score": 1, "noul": 2}
 # scaling applied), kept here so the behaviour stays identical if a checkpoint changes it.
 DEFAULT_MAX_LEN = 1024
 DEFAULT_HEAD_MAX_LEN = 256
+STATE_CHAR_CAP = 8192
 
 INPUT_NAMES = ["input_ids", "attention_mask", "marker_pos", "marker_mask", "qtype"]
 
@@ -86,7 +87,13 @@ def build_sequence(tok, state, q, max_len, head_max_len, mask_token, mask_id, cl
         ids.extend(o)
     ids.append(sep_id)
     room = max(0, max_len - len(ids) - 1)
-    st = tok.encode(serialize_state(state).replace(mask_token, " "), add_special_tokens=False).ids
+    # Only the first `room` state tokens can reach the model, so encoding more than
+    # STATE_CHAR_CAP characters is wasted work and unbounded memory: a 200k-char state
+    # OOM-killed the 512 MB instance even at max_len=384, because the whole string was
+    # tokenized before truncation. The cap is output-preserving -- max_len=384 means at
+    # most ~310 state tokens (~1.2k Latin chars), and 8192 covers that for any script.
+    st_text = serialize_state(state).replace(mask_token, " ")[:STATE_CHAR_CAP]
+    st = tok.encode(st_text, add_special_tokens=False).ids
     st = st[:room]
     ids = ids + st + [sep_id]
     return ids[:max_len], [m for m in markers if m < max_len]
