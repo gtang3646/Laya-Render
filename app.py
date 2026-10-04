@@ -46,6 +46,7 @@ def _load():
 
 
 @app.get("/health")
+@app.head("/health")
 def health():
     # 503 until the ONNX session is live, so Render's health check does not route traffic to a
     # service that is still downloading/loading the model.

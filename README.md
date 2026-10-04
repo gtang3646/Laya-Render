@@ -115,9 +115,77 @@ curl.exe -X POST http://127.0.0.1:8123/v1/decide -H "Content-Type: application/j
 
 模型加载中或未加载时返回 503，入参格式错误返回 422（pydantic 校验）。
 
+### 三种任务类型的请求示例
+
+以下示例均为线上服务实测返回。`criteria` 可以是「选项 -> 描述」的映射（如 choice），
+也可以是裸字符串数组（如 score）。
+
+**choice —— 从候选意图中选一个**
+
+```json
+请求：
+{"state": "The package arrived but the screen is cracked and the buyer wants their money back.",
+ "questions": {"q1": {"type": "choice", "instructions": "What is the user's intent?",
+                      "criteria": {"refund": "wants money back", "support": "wants technical help",
+                                   "replace": "wants a replacement shipped"}}}}
+
+返回：
+{"model": "laya-rl-agent",
+ "answers": {"q1": {"type": "choice", "choice": "refund",
+                    "probabilities": {"refund": 0.9985, "support": 0.0004, "replace": 0.0011},
+                    "confidence": 0.9893, "action": {"act_probability": 1.0}}},
+ "usage": {"input_tokens": 50, "output_tokens": 0}}
+```
+
+**score —— 按描述打分，返回加权期望分**
+
+```json
+请求：
+{"state": "The hotel was fine. Room was small but clean, breakfast was forgettable.",
+ "questions": {"q1": {"type": "score", "instructions": "Rate the overall satisfaction.",
+                      "criteria": ["very bad", "bad", "ok", "good", "very good"]}}}
+
+返回：
+{"model": "laya-rl-agent",
+ "answers": {"q1": {"type": "score", "score": 0.8847,
+                    "legend": {"0": "very bad", "1": "bad", "2": "ok", "3": "good", "4": "very good"},
+                    "probabilities": {"0": 0.1214, "1": 0.8751, "2": 0.0014, "3": 0.0017, "4": 0.0004},
+                    "confidence": 0.754, "action": {"act_probability": 1.0}}},
+ "usage": {"input_tokens": 60, "output_tokens": 0}}
+```
+
+`score` 是各档概率的加权期望（上例为 `0*0.1214 + 1*0.8751 + ... ≈ 0.8847`），
+`legend` 给出档位下标到描述的映射。
+
+**noul —— 判断是否蕴含，返回蕴含概率**
+
+```json
+请求：
+{"state": "premise: 一个人在舞台上弹吉他。\nhypothesis: 那个人正在演奏音乐。",
+ "questions": {"q1": {"type": "noul", "instructions": "前提是否蕴含假设？"}}}
+
+返回：
+{"model": "laya-rl-agent",
+ "answers": {"q1": {"type": "noul", "noul": 0.9867, "confidence": 0.9867,
+                    "action": {"act_probability": 1.0}}},
+ "usage": {"input_tokens": 52, "output_tokens": 0}}
+```
+
+`noul` 无需 `criteria`；`noul` 字段是「蕴含假设」的概率，`1 - noul` 即不蕴含。
+
+一个请求里可以同时带多个问题（类型可混用），`state` 也可传结构化对象或对话轮次列表：
+
+```json
+{"state": {"customer": "jane", "turns": ["I was charged twice", "please help"]},
+ "questions": {"sev": {"type": "choice", "instructions": "How severe is this?",
+                       "criteria": {"low": "minor inconvenience", "high": "needs escalation"}},
+               "hold": {"type": "noul", "instructions": "Should the agent escalate to a human?"}}}
+```
+
 ### `GET /health`
 
 加载完成后返回 `{"status": "ok", "variant": "wo8"}`，加载中返回 503。
+同时支持 `HEAD /health`（同样返回 200 / 503，无响应体），供 UptimeRobot 这类监控探测使用。
 
 ## 4. 与原 torch 实现的一致性验证
 
